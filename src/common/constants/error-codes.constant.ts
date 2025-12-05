@@ -1,0 +1,44 @@
+// ============================================
+// src/common/constants/error-codes.constant.ts
+// ============================================
+export const ERROR_CODES = {
+  // Authentication & Authorization
+  UNAUTHORIZED: 'AUTH001',
+  FORBIDDEN: 'AUTH002',
+  INVALID_TOKEN: 'AUTH003',
+  TOKEN_EXPIRED: 'AUTH004',
+  INVALID_CREDENTIALS: 'AUTH005',
+  ACCOUNT_DISABLED: 'AUTH006',
+  ACCOUNT_NOT_VERIFIED: 'AUTH007',
+  
+  // Validation
+  VALIDATION_ERROR: 'VAL001',
+  INVALID_INPUT: 'VAL002',
+  MISSING_REQUIRED_FIELD: 'VAL003',
+  INVALID_FORMAT: 'VAL004',
+  
+  // Resource
+  NOT_FOUND: 'RES001',
+  ALREADY_EXISTS: 'RES002',
+  CONFLICT: 'RES003',
+  
+  // Database
+  DATABASE_ERROR: 'DB001',
+  QUERY_FAILED: 'DB002',
+  CONNECTION_FAILED: 'DB003',
+  
+  // External Services
+  EXTERNAL_SERVICE_ERROR: 'EXT001',
+  THIRD_PARTY_API_ERROR: 'EXT002',
+  
+  // Business Logic
+  BUSINESS_RULE_VIOLATION: 'BUS001',
+  INSUFFICIENT_PERMISSIONS: 'BUS002',
+  OPERATION_NOT_ALLOWED: 'BUS003',
+  
+  // System
+  INTERNAL_SERVER_ERROR: 'SYS001',
+  SERVICE_UNAVAILABLE: 'SYS002',
+  TIMEOUT: 'SYS003',
+  RATE_LIMIT_EXCEEDED: 'SYS004',
+} as const;

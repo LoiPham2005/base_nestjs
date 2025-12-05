@@ -1,0 +1,22 @@
+// ============================================
+// src/shared/mail/templates/verify-email.hbs
+// ============================================
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #2196F3;">Verify Your Email Address</h1>
+    <p>Please click the button below to verify your email address:</p>
+    <a href="{{verificationUrl}}" style="display: inline-block; padding: 10px 20px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
+      Verify Email
+    </a>
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p style="word-break: break-all; color: #666;">{{verificationUrl}}</p>
+    <p style="color: #999; font-size: 12px;">If you didn't request this verification, please ignore this email.</p>
+  </div>
+</body>
+</html>
