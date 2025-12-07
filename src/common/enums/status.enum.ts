@@ -18,6 +18,12 @@ export enum UserStatus {
   BANNED = 'banned',
 }
 
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other',
+}
+
 export enum OrderStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',

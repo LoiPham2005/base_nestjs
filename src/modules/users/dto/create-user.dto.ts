@@ -7,18 +7,27 @@ import {
   IsString,
   IsOptional,
   IsEnum,
-  IsArray,
+  IsDate,
+  IsBoolean,
+  IsObject,
   MinLength,
   MaxLength,
   Matches,
 } from 'class-validator';
-import { Role } from '../../../common/enums/role.enum';
+import { Type } from 'class-transformer';
+import { Gender } from '../../../common/enums/status.enum';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constant';
+import { UserPreferences } from '../entities/user.entity';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   email: string;
+
+  @ApiProperty({ example: '+84901234567' })
+  @IsString()
+  @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Invalid phone number format' })
+  phone: string;
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
@@ -27,31 +36,31 @@ export class CreateUserDto {
   @Matches(REGEX_PATTERNS.PASSWORD)
   password: string;
 
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: 'John Doe' })
   @IsString()
   @MinLength(2)
-  @MaxLength(50)
-  firstName: string;
+  @MaxLength(100)
+  fullName: string;
 
-  @ApiProperty({ example: 'Doe' })
-  @IsString()
-  @MinLength(2)
-  @MaxLength(50)
-  lastName: string;
-
-  @ApiPropertyOptional({ example: '+1234567890' })
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
   @IsOptional()
   @IsString()
-  phone?: string;
+  @MaxLength(500)
+  avatarUrl?: string;
 
-  @ApiPropertyOptional({ example: [Role.USER] })
+  @ApiPropertyOptional({ example: '1990-01-01' })
   @IsOptional()
-  @IsArray()
-  @IsEnum(Role, { each: true })
-  roles?: Role[];
+  @IsDate()
+  @Type(() => Date)
+  dateOfBirth?: Date;
+
+  @ApiPropertyOptional({ enum: Gender })
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  avatar?: string;
+  @IsObject()
+  preferences?: UserPreferences;
 }

@@ -1,13 +1,25 @@
 // ============================================
-// Example User Entity using Base Entity
 // src/modules/users/entities/user.entity.ts
 // ============================================
-import { Entity, Column, Index } from 'typeorm';
+import { Entity, Column, Index, OneToMany } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { SoftDeleteEntity } from '../../../common/entities/soft-delete.entity';
-import { Role } from '../../../common/enums/role.enum';
-import { UserStatus } from '../../../common/enums/status.enum';
+import { UserStatus, Gender } from '../../../common/enums/status.enum';
+import { UserRole } from './user-role.entity';
+import { UserSession } from '../../sessions/entities/user-session.entity';
+import { SecurityLog } from '../../security/entities/security-log.entity';
+
+export interface UserPreferences {
+  language?: string;
+  timezone?: string;
+  notifications?: {
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  theme?: 'light' | 'dark' | 'system';
+}
 
 @Entity('users')
 export class User extends SoftDeleteEntity {
@@ -20,51 +32,50 @@ export class User extends SoftDeleteEntity {
   email: string;
 
   @ApiProperty({
+    description: 'User phone number',
+    example: '+84901234567',
+  })
+  @Column({ unique: true, length: 20 })
+  @Index()
+  phone: string;
+
+  @ApiProperty({
     description: 'User password (hashed)',
   })
-  @Column({ length: 255 })
+  @Column({ name: 'password_hash', length: 255 })
   @Exclude()
-  password: string;
+  passwordHash: string;
 
   @ApiProperty({
-    description: 'User first name',
-    example: 'John',
+    description: 'User full name',
+    example: 'John Doe',
   })
-  @Column({ length: 100 })
-  firstName: string;
-
-  @ApiProperty({
-    description: 'User last name',
-    example: 'Doe',
-  })
-  @Column({ length: 100 })
-  lastName: string;
-
-  @ApiPropertyOptional({
-    description: 'User phone number',
-    example: '+1234567890',
-  })
-  @Column({ nullable: true, length: 20 })
-  phone?: string;
+  @Column({ name: 'full_name', length: 100 })
+  fullName: string;
 
   @ApiPropertyOptional({
     description: 'User avatar URL',
     example: 'https://example.com/avatar.jpg',
   })
-  @Column({ nullable: true, length: 500 })
-  avatar?: string;
+  @Column({ name: 'avatar_url', nullable: true, length: 500 })
+  avatarUrl?: string;
 
-  @ApiProperty({
-    description: 'User roles',
-    enum: Role,
-    isArray: true,
-    example: [Role.USER],
+  @ApiPropertyOptional({
+    description: 'Date of birth',
+  })
+  @Column({ name: 'date_of_birth', type: 'date', nullable: true })
+  dateOfBirth?: Date;
+
+  @ApiPropertyOptional({
+    description: 'User gender',
+    enum: Gender,
   })
   @Column({
-    type: 'simple-array',
-    default: Role.USER,
+    type: 'enum',
+    enum: Gender,
+    nullable: true,
   })
-  roles: Role[];
+  gender?: Gender;
 
   @ApiProperty({
     description: 'User status',
@@ -74,7 +85,7 @@ export class User extends SoftDeleteEntity {
   @Column({
     type: 'enum',
     enum: UserStatus,
-    default: UserStatus.PENDING_VERIFICATION,
+    default: UserStatus.INACTIVE,
   })
   status: UserStatus;
 
@@ -82,38 +93,58 @@ export class User extends SoftDeleteEntity {
     description: 'Email verification status',
     example: false,
   })
-  @Column({ type: 'boolean', default: false })
-  isEmailVerified: boolean;
+  @Column({ name: 'email_verified', type: 'boolean', default: false })
+  emailVerified: boolean;
+
+  @ApiProperty({
+    description: 'Phone verification status',
+    example: false,
+  })
+  @Column({ name: 'phone_verified', type: 'boolean', default: false })
+  phoneVerified: boolean;
+
+  @ApiProperty({
+    description: 'Two-factor authentication enabled',
+    example: false,
+  })
+  @Column({ name: 'two_factor_enabled', type: 'boolean', default: false })
+  twoFactorEnabled: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Two-factor secret',
+  })
+  @Column({ name: 'two_factor_secret', nullable: true, length: 255 })
+  @Exclude()
+  twoFactorSecret?: string;
+
+  @ApiPropertyOptional({
+    description: 'User preferences',
+  })
+  @Column({ type: 'jsonb', nullable: true })
+  preferences?: UserPreferences;
 
   @ApiPropertyOptional({
     description: 'Last login timestamp',
   })
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'last_login_at', type: 'timestamp', nullable: true })
   lastLoginAt?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Email verification token',
-  })
-  @Column({ nullable: true, length: 500 })
-  @Exclude()
-  emailVerificationToken?: string;
+  // Relations
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  userRoles: UserRole[];
 
-  @ApiPropertyOptional({
-    description: 'Password reset token',
-  })
-  @Column({ nullable: true, length: 500 })
-  @Exclude()
-  passwordResetToken?: string;
+  @OneToMany(() => UserSession, (session) => session.user)
+  sessions: UserSession[];
 
-  @ApiPropertyOptional({
-    description: 'Password reset token expiry',
-  })
-  @Column({ type: 'timestamp', nullable: true })
-  @Exclude()
-  passwordResetExpires?: Date;
+  @OneToMany(() => SecurityLog, (log) => log.user)
+  securityLogs: SecurityLog[];
 
-  // Virtual property for full name
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
+  // Virtual properties
+  get isActive(): boolean {
+    return this.status === UserStatus.ACTIVE;
+  }
+
+  get isVerified(): boolean {
+    return this.emailVerified || this.phoneVerified;
   }
 }
